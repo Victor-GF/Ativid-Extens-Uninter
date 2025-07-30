@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
-import 'dart:math';
 import 'widgets/forma_geometrica_widget.dart';
 
 class Forma {
