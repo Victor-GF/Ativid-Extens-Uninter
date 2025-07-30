@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
-import 'dart:math';
 import 'widgets/circulo_de_cor_widget.dart';
 import 'domain/gerardor_de_sequencia.dart';
 
