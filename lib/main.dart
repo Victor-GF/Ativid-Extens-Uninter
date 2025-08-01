@@ -1,8 +1,15 @@
+import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_repository.dart';
 import 'package:atividade_extensionista_uninter/features/menu/menu_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-void main() {
+Future<void> main() async {
+  // Garante que os widgets do Flutter sejam inicializados antes de qualquer outra coisa
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializa nosso repositório de estatísticas
+  await EstatisticasRepository.instance.init();
+
   runApp(const LudicApp());
 }
 
