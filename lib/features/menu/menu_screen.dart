@@ -1,4 +1,5 @@
 import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
+import 'package:atividade_extensionista_uninter/features/estatisticas/estatisticas_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'widgets/menu_item_widget.dart';
@@ -35,25 +36,45 @@ class MenuPrincipalScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: atividades.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final jogo = atividades[index];
-          return MenuItemWidget(
-            titulo: jogo.label,
-            icone: jogo.icon,
-            cor: jogo.iconColor,
-            onTap: () {
-              // Lógica de navegação
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => jogo.screen),
-              );
-            },
-          );
-        },
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: atividades.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final jogo = atividades[index];
+                return MenuItemWidget(
+                  titulo: jogo.label,
+                  icone: jogo.icon,
+                  cor: jogo.iconColor,
+                  onTap: () {
+                    // Lógica de navegação
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => jogo.screen),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: MenuItemWidget(
+              titulo: 'Estatísticas',
+              icone: Icons.bar_chart_rounded,
+              cor: Colors.amber,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EstatisticasScreen()),
+                );
+              },
+            ),
+          )
+        ],
       ),
     );
   }

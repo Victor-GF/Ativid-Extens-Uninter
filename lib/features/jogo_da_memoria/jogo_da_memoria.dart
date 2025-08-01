@@ -27,7 +27,6 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
 
   // Relógio para o tempo
   final _stopwatch = Stopwatch();
-  int _contadorDeErros = 0;
 
   @override
   void initState() {
@@ -47,8 +46,7 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
     _confettiController.stop();
     List<int> numbers = List.generate(_gridSize ~/ 2, (i) => i + 1) + List.generate(_gridSize ~/ 2, (i) => i + 1);
     numbers.shuffle();
-
-    _contadorDeErros = 0;
+    
     _stopwatch.reset();
     _stopwatch.start();
 

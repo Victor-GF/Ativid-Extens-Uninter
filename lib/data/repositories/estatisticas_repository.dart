@@ -15,7 +15,7 @@ class EstatisticasRepository {
     _box = await Hive.openBox(_boxName);
   }
 
-  EstatisticaJogo getEstatisticas(String nomeDoJogo) {
+  Future<EstatisticaJogo> getEstatisticas(String nomeDoJogo) async {
     // Busca o mapa de dados do Hive. Se não existir, retorna um mapa vazio.
     final dadosDoHive = Map<String, dynamic>.from(_box.get(nomeDoJogo) ?? {});
     return EstatisticaJogo.fromMap(dadosDoHive, nomeDoJogo);
@@ -25,20 +25,20 @@ class EstatisticasRepository {
     required Atividade atividade,
     required double tempo,
   }) async {
-    final estatisticasAtuais = getEstatisticas(atividade.id);
+    final estatisticasAtuais = await getEstatisticas(atividade.id);
 
     // Verifica recorde
-    if (tempo < estatisticasAtuais.recordeDeTempo) {
+    if (tempo < (estatisticasAtuais.recordeDeTempo ?? double.infinity)) {
       estatisticasAtuais.recordeDeTempo = tempo;
     }
 
     // Atualiza média de tempo
-    final mediaAtual = estatisticasAtuais.mediaDeTempo;
-    final totalPartidas = estatisticasAtuais.totalDePartidas;
+    final mediaAtual = estatisticasAtuais.mediaDeTempo ?? .0;
+    final totalPartidas = estatisticasAtuais.totalDePartidas ?? .0;
     estatisticasAtuais.mediaDeTempo = (mediaAtual * totalPartidas + tempo) / (totalPartidas + 1);
     
     // Incrementa o total de partidas
-    estatisticasAtuais.totalDePartidas++;
+    estatisticasAtuais.totalDePartidas = (estatisticasAtuais.totalDePartidas ?? 0) + 1;
 
     // Salva o objeto no banco de dados
     await _box.put(atividade.id, estatisticasAtuais.toMap());
