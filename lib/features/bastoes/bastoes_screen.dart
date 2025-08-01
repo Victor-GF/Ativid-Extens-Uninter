@@ -1,3 +1,5 @@
+import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
+import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:confetti/confetti.dart';
@@ -19,8 +21,10 @@ class _BastoesScreenState extends State<BastoesScreen> {
   late ConfettiController _confettiController;
   bool _vitoria = false;
 
-  // ALTERAÇÃO: Nova variável para controlar a ordem do desafio
   late bool _ordemCrescente;
+
+  // Para cronometrar o tempo
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -32,11 +36,16 @@ class _BastoesScreenState extends State<BastoesScreen> {
   @override
   void dispose() {
     _confettiController.dispose();
+    _stopwatch.stop();
     super.dispose();
   }
 
   void _iniciarRodada() {
     final random = Random();
+
+    _stopwatch.reset();
+    _stopwatch.start();
+
     setState(() {
       _bastoesEmJogo = List<double>.from(_alturasCorretas)..shuffle();
       _confettiController.stop();
@@ -60,7 +69,6 @@ class _BastoesScreenState extends State<BastoesScreen> {
   }
 
   void _verificarVitoria() {
-    // ALTERAÇÃO: Cria a lista de "gabarito" correta baseada no desafio atual
     final List<double> gabarito;
     if (_ordemCrescente) {
       gabarito = _alturasCorretas;
@@ -74,10 +82,26 @@ class _BastoesScreenState extends State<BastoesScreen> {
     if (vitoriaAlcancada && !_vitoria) {
       setState(() => _vitoria = true);
       _confettiController.play();
-      Future.delayed(const Duration(milliseconds: 500), _showWinDialog);
+      
+      Future.delayed(const Duration(milliseconds: 400), _venceuJogo);
     }
   }
-  
+
+  Future<void> _venceuJogo() async {
+    _stopwatch.stop();
+
+    final tempoFinal = _stopwatch.elapsedMilliseconds / 1000;
+
+    // Salva o tempo no repositório
+    await EstatisticasRepository.instance.registrarNovoTempoAtividade(
+      atividade: Atividade.bastoesColoridos, 
+      tempo: tempoFinal,
+    );
+    
+    // Continua com a animação e o dialog
+    Future.delayed(const Duration(milliseconds: 400), _showWinDialog);
+  }
+
   void _showWinDialog() {
     showDialog(
       context: context,
