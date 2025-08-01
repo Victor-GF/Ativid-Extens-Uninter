@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
 import 'package:atividade_extensionista_uninter/data/models/estatistica_jogo.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -14,16 +17,32 @@ class EstatisticasRepository {
     _box = await Hive.openBox(_boxName);
   }
 
-  // Função para buscar os dados de um jogo
-  Future<EstatisticaJogo> buscarEstatistica(String nomeDoJogo) async {
-    // A lógica de buscar no Hive e converter de Map para o nosso modelo
-    final dados = Map<String, dynamic>.from(_box.get(nomeDoJogo) ?? {});
-    return EstatisticaJogo.fromMap(dados, nomeDoJogo);
+  EstatisticaJogo getEstatisticas(String nomeDoJogo) {
+    // Busca o mapa de dados do Hive. Se não existir, retorna um mapa vazio.
+    final dadosDoHive = Map<String, dynamic>.from(_box.get(nomeDoJogo) ?? {});
+    return EstatisticaJogo.fromMap(dadosDoHive, nomeDoJogo);
   }
 
-  // Função para salvar os dados de um jogo
-  Future<void> salvarEstatistica(EstatisticaJogo estatistica) async {
-    // A lógica de converter nosso modelo para Map e salvar no Hive
-    await _box.put(estatistica.nomeDoJogo, estatistica.toMap());
+  Future<void> registrarNovoTempoAtividade({
+    required Atividade atividade,
+    required double tempo,
+  }) async {
+    final estatisticasAtuais = getEstatisticas(atividade.id);
+
+    // Verifica recorde
+    if (tempo < estatisticasAtuais.recordeDeTempo) {
+      estatisticasAtuais.recordeDeTempo = tempo;
+    }
+
+    // Atualiza média de tempo
+    final mediaAtual = estatisticasAtuais.mediaDeTempo;
+    final totalPartidas = estatisticasAtuais.totalDePartidas;
+    estatisticasAtuais.mediaDeTempo = (mediaAtual * totalPartidas + tempo) / (totalPartidas + 1);
+    
+    // Incrementa o total de partidas
+    estatisticasAtuais.totalDePartidas++;
+
+    // Salva o objeto no banco de dados
+    await _box.put(atividade.id, estatisticasAtuais.toMap());
   }
 }
