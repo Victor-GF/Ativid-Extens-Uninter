@@ -1,6 +1,8 @@
+import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
+import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_repository.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:confetti/confetti.dart'; // ALTERAÇÃO: Importar o pacote de confetes
+import 'package:confetti/confetti.dart';
 import 'widgets/torre.dart';
 
 class TorreDeBlocosScreen extends StatefulWidget {
@@ -16,7 +18,6 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
   int? _indiceCorreto;
   bool _bloquearToques = false;
 
-  // ALTERAÇÃO: Aumentar o número de chaves para 4 torres
   final _chavesDasTorres = [
     GlobalKey<TorreState>(),
     GlobalKey<TorreState>(),
@@ -26,21 +27,23 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
 
   final _cores = [Colors.teal, Colors.pink, Colors.orange, Colors.purple];
   
-  // ALTERAÇÃO: Adicionar o controller para os confetes
+  // Para os controles do usuário
   late ConfettiController _confettiController;
+
+  // Para cronometrar o tempo
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
     super.initState();
-    // ALTERAÇÃO: Inicializar o controller
     _confettiController = ConfettiController(duration: const Duration(seconds: 1));
     _iniciarNovaRodada();
   }
 
   @override
   void dispose() {
-    // ALTERAÇÃO: Dispensar o controller
     _confettiController.dispose();
+    _stopwatch.stop();
     super.dispose();
   }
 
@@ -48,7 +51,6 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
     _confettiController.stop(); // Garante que os confetes parem
     final random = Random();
     
-    // ALTERAÇÃO: Gerar 4 alturas diferentes
     final Set<int> alturas = {};
     while (alturas.length < 4) {
       alturas.add(random.nextInt(7) + 2);
@@ -63,6 +65,9 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
     int resposta = _desafioMaiorTorre ? _alturasDasTorres.reduce(max) : _alturasDasTorres.reduce(min);
     _indiceCorreto = _alturasDasTorres.indexOf(resposta);
 
+    _stopwatch.reset();
+    _stopwatch.start();
+
     setState(() {
       _bloquearToques = false; // Garante que os toques sejam liberados
     });
@@ -74,11 +79,10 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
     setState(() => _bloquearToques = true);
 
     if (indiceTocado == _indiceCorreto) {
-      // ALTERAÇÃO: Tocar confetes e mostrar dialog em vez de ir para a próxima rodada
       _chavesDasTorres[indiceTocado].currentState?.animarAcerto();
       _confettiController.play();
       Future.delayed(const Duration(milliseconds: 400), () {
-        _showWinDialog();
+        _venceuJogo(indiceTocado);
       });
     } else {
       _chavesDasTorres[indiceTocado].currentState?.animarErro();
@@ -88,7 +92,24 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
     }
   }
 
-  // ALTERAÇÃO: Novo método para exibir o dialog de acerto
+  Future<void> _venceuJogo(int indiceTocado) async {
+    _stopwatch.stop();
+    final tempoFinal = _stopwatch.elapsedMilliseconds / 1000;
+
+    // Salva o tempo no repositório
+    await EstatisticasRepository.instance.registrarNovoTempoAtividade(
+      atividade: Atividade.torreDeBlocos, 
+      tempo: tempoFinal,
+    );
+    
+    // Continua com a animação e o dialog
+    _chavesDasTorres[indiceTocado].currentState?.animarAcerto();
+    _confettiController.play();
+    Future.delayed(const Duration(milliseconds: 400), () {
+      _showWinDialog();
+    });
+  }
+  
   void _showWinDialog() {
     showDialog(
       context: context,
