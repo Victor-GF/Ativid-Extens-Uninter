@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
+import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:confetti/confetti.dart';
@@ -23,6 +25,10 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
   
   late ConfettiController _confettiController;
 
+  // Relógio para o tempo
+  final _stopwatch = Stopwatch();
+  int _contadorDeErros = 0;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +39,7 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
   @override
   void dispose() {
     _confettiController.dispose();
+    _stopwatch.stop();
     super.dispose();
   }
 
@@ -40,6 +47,10 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
     _confettiController.stop();
     List<int> numbers = List.generate(_gridSize ~/ 2, (i) => i + 1) + List.generate(_gridSize ~/ 2, (i) => i + 1);
     numbers.shuffle();
+
+    _contadorDeErros = 0;
+    _stopwatch.reset();
+    _stopwatch.start();
 
     setState(() {
       _cardNumbers = numbers;
@@ -72,8 +83,7 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
       _flippedIndexes = [];
       _isChecking = false;
       if (_matchedPairs.length == _gridSize) {
-        _confettiController.play();
-        _showWinDialog();
+        _venceuJogo();
       }
     } else {
       Future.delayed(const Duration(milliseconds: 1000), () {
@@ -85,6 +95,20 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
         });
       });
     }
+  }
+
+  Future<void> _venceuJogo() async {
+    _stopwatch.stop();
+
+    final tempoFinal = _stopwatch.elapsedMilliseconds / 1_000;
+
+    await EstatisticasRepository.instance.registrarNovoTempoAtividade(
+      atividade: Atividade.jogoDaMemoria, 
+      tempo: tempoFinal
+    );
+
+    _confettiController.play();
+    _showWinDialog();
   }
 
   void _showWinDialog() {

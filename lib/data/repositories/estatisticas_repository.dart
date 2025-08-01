@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
 import 'package:atividade_extensionista_uninter/data/models/estatistica_jogo.dart';
 import 'package:hive_flutter/hive_flutter.dart';
