@@ -1,3 +1,5 @@
+import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
+import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'widgets/forma_geometrica_widget.dart';
@@ -28,6 +30,9 @@ class _GuardiaoDasFormasScreenState extends State<GuardiaoDasFormasScreen> with 
   final List<Color> _cores = [Colors.blue.shade400, Colors.red.shade400, Colors.green.shade400, Colors.yellow.shade400, Colors.purple.shade400];
   final int _totalPorForma = 3;
 
+  // Para cronometrar o tempo
+  final _stopwatch = Stopwatch();
+
   @override
   void initState() {
     super.initState();
@@ -48,11 +53,15 @@ class _GuardiaoDasFormasScreenState extends State<GuardiaoDasFormasScreen> with 
   @override
   void dispose() {
     _confettiController.dispose();
+    _stopwatch.stop();
     _animationControllers.values.forEach((controller) => controller.dispose());
     super.dispose();
   }
 
   void _iniciarRodada() {
+    _stopwatch.reset();
+    _stopwatch.start();
+
     setState(() {
       _formasParaArrastar = [];
       int idCounter = 0;
@@ -82,8 +91,21 @@ class _GuardiaoDasFormasScreenState extends State<GuardiaoDasFormasScreen> with 
 
     if (_formasParaArrastar.isEmpty) {
       _confettiController.play();
-      Future.delayed(const Duration(milliseconds: 500), _showWinDialog);
+      Future.delayed(const Duration(milliseconds: 400), _venceuJogo);
     }
+  }
+
+  Future<void> _venceuJogo() async {
+    _stopwatch.stop();
+    final tempoFinal = _stopwatch.elapsedMilliseconds / 1000;
+
+    // Salva o tempo no repositório
+    await EstatisticasRepository.instance.registrarNovoTempoAtividade(
+      atividade: Atividade.guardiaoDasFormas, 
+      tempo: tempoFinal,
+    );
+    
+    Future.delayed(const Duration(milliseconds: 400), _showWinDialog);
   }
   
   void _showWinDialog() {
