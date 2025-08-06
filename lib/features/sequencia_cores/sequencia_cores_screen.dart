@@ -1,3 +1,5 @@
+import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
+import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'widgets/circulo_de_cor_widget.dart';
@@ -34,6 +36,9 @@ class _SequenciaCoresScreenState extends State<SequenciaCoresScreen> {
   final List<GlobalKey<CirculoDeCorWidgetState>> _chavesDasOpcoes =
       List.generate(3, (_) => GlobalKey());
 
+  // Para cronometrar o tempo
+  final _stopwatch = Stopwatch();
+
   @override
   void initState() {
     super.initState();
@@ -47,10 +52,15 @@ class _SequenciaCoresScreenState extends State<SequenciaCoresScreen> {
   void dispose() {
     _confettiController.dispose();
     super.dispose();
+    _stopwatch.stop();
   }
 
   void _iniciarRodada() {
     final novaRodada = _gerador.gerarNovaRodada(coresDisponiveis: _coresDoJogo);
+
+    _stopwatch.reset();
+    _stopwatch.start();
+
     setState(() {
       _sequencia = novaRodada.sequencia;
       _corCorreta = novaRodada.corCorreta;
@@ -72,8 +82,8 @@ class _SequenciaCoresScreenState extends State<SequenciaCoresScreen> {
         if (indiceFaltando != -1) {
           _sequencia[indiceFaltando] = _corCorreta;
         }
-        _confettiController.play();
-        Future.delayed(const Duration(milliseconds: 800), _showWinDialog);
+         _confettiController.play();
+        Future.delayed(const Duration(milliseconds: 400), _venceuJogo);
       } else {
         // ALTERAÇÃO PRINCIPAL: Lógica para ativar a animação de tremor
         _estadoFeedback = EstadoFeedback.incorreto;
@@ -93,7 +103,20 @@ class _SequenciaCoresScreenState extends State<SequenciaCoresScreen> {
     });
   }
 
-  // CORREÇÃO: Implementação movida para dentro da classe e com o nome correto.
+  Future<void> _venceuJogo() async {
+    _stopwatch.stop();
+    final tempoFinal = _stopwatch.elapsedMilliseconds / 1000;
+
+     // Salva o tempo no repositório
+    await EstatisticasRepository.instance.registrarNovoTempoAtividade(
+      atividade: Atividade.sequenciaDasCores, 
+      tempo: tempoFinal,
+    );
+
+    Future.delayed(const Duration(milliseconds: 400), _showWinDialog);
+  }
+
+  // Implementação movida para dentro da classe e com o nome correto.
   void _showWinDialog() {
     showDialog(
       context: context,
