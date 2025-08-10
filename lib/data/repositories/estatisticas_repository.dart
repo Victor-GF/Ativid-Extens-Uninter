@@ -21,14 +21,15 @@ class EstatisticasRepository {
     return EstatisticaJogo.fromMap(dadosDoHive, nomeDoJogo);
   }
 
-  Future<void> registrarNovoTempoAtividade({
+  Future<bool> registrarNovoTempoAtividade({
     required Atividade atividade,
     required double tempo,
   }) async {
     final estatisticasAtuais = await getEstatisticas(atividade.id);
 
     // Verifica recorde
-    if (tempo < (estatisticasAtuais.recordeDeTempo ?? double.infinity)) {
+    final recorde = tempo < (estatisticasAtuais.recordeDeTempo ?? double.infinity);
+    if (recorde) {
       estatisticasAtuais.recordeDeTempo = tempo;
     }
 
@@ -42,5 +43,7 @@ class EstatisticasRepository {
 
     // Salva o objeto no banco de dados
     await _box.put(atividade.id, estatisticasAtuais.toMap());
+
+    return recorde;
   }
 }
