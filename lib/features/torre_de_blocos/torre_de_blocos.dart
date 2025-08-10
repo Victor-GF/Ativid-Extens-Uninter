@@ -3,6 +3,7 @@ import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_r
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:confetti/confetti.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'widgets/torre.dart';
 
 class TorreDeBlocosScreen extends StatefulWidget {
@@ -97,7 +98,7 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
     final tempoFinal = _stopwatch.elapsedMilliseconds / 1000;
 
     // Salva o tempo no repositório
-    await EstatisticasRepository.instance.registrarNovoTempoAtividade(
+    final recorde = await EstatisticasRepository.instance.registrarNovoTempoAtividade(
       atividade: Atividade.torreDeBlocos, 
       tempo: tempoFinal,
     );
@@ -106,23 +107,62 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
     _chavesDasTorres[indiceTocado].currentState?.animarAcerto();
     _confettiController.play();
     Future.delayed(const Duration(milliseconds: 400), () {
-      _showWinDialog();
+      _showWinDialog(recorde);
     });
   }
   
-  void _showWinDialog() {
+  void _showWinDialog(bool recorde) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           backgroundColor: const Color(0xFF1F2937),
-          title: const Text('Muito bem!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+
+          // Título dinâmico: muda se for um novo recorde
+          title: Text(
+            recorde ? 'NOVO RECORDE!' : 'Mandou Bem!',
+            style: GoogleFonts.nunito(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          content: Column(
+            mainAxisSize:
+                MainAxisSize.min, // Faz a coluna se ajustar ao conteúdo
+            children: [
+              // Ícone de troféu aparece apenas se for um novo recorde
+              if (recorde)
+                const Icon(Icons.emoji_events, color: Colors.amber, size: 60),
+              if (recorde) const SizedBox(height: 16),
+
+              // Conteúdo de texto dinâmico
+              Text(
+                recorde
+                    ? 'Você superou seu melhor tempo!'
+                    : 'Você encontrou todos os pares!',
+                style: GoogleFonts.nunito(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+
           actionsAlignment: MainAxisAlignment.center,
           actions: <Widget>[
             TextButton(
-              child: const Text('Próxima Rodada', style: TextStyle(color: Colors.tealAccent, fontSize: 16, fontWeight: FontWeight.bold)),
+              child: Text(
+                'Jogar de Novo',
+                style: GoogleFonts.nunito(
+                  color: Colors.tealAccent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
                 _iniciarNovaRodada();
@@ -133,7 +173,6 @@ class _TorreDeBlocosScreenState extends State<TorreDeBlocosScreen> {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

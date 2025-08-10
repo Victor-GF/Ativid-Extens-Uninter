@@ -22,7 +22,7 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
   List<int> _flippedIndexes = [];
   List<int> _matchedPairs = [];
   bool _isChecking = false;
-  
+
   late ConfettiController _confettiController;
 
   // Relógio para o tempo
@@ -31,10 +31,12 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 2),
+    );
     _startNewGame();
   }
-  
+
   @override
   void dispose() {
     _confettiController.dispose();
@@ -44,9 +46,11 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
 
   void _startNewGame() {
     _confettiController.stop();
-    List<int> numbers = List.generate(_gridSize ~/ 2, (i) => i + 1) + List.generate(_gridSize ~/ 2, (i) => i + 1);
+    List<int> numbers =
+        List.generate(_gridSize ~/ 2, (i) => i + 1) +
+        List.generate(_gridSize ~/ 2, (i) => i + 1);
     numbers.shuffle();
-    
+
     _stopwatch.reset();
     _stopwatch.start();
 
@@ -100,10 +104,11 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
 
     final tempoFinal = _stopwatch.elapsedMilliseconds / 1_000;
 
-    final recorde = await EstatisticasRepository.instance.registrarNovoTempoAtividade(
-      atividade: Atividade.jogoDaMemoria, 
-      tempo: tempoFinal
-    );
+    final recorde = await EstatisticasRepository.instance
+        .registrarNovoTempoAtividade(
+          atividade: Atividade.jogoDaMemoria,
+          tempo: tempoFinal,
+        );
 
     _confettiController.play();
     _showWinDialog(recorde);
@@ -111,59 +116,65 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
 
   void _showWinDialog(bool recorde) {
     showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: const Color(0xFF1F2937),
-        
-        // Título dinâmico: muda se for um novo recorde
-        title: Text(
-          recorde ? 'NOVO RECORDE!' : 'Mandou Bem!',
-          style: GoogleFonts.nunito(color: Colors.white, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-        
-        content: Column(
-          mainAxisSize: MainAxisSize.min, // Faz a coluna se ajustar ao conteúdo
-          children: [
-            // Ícone de troféu aparece apenas se for um novo recorde
-            if (recorde)
-              const Icon(
-                Icons.emoji_events,
-                color: Colors.amber,
-                size: 60,
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: const Color(0xFF1F2937),
+
+          // Título dinâmico: muda se for um novo recorde
+          title: Text(
+            recorde ? 'NOVO RECORDE!' : 'Mandou Bem!',
+            style: GoogleFonts.nunito(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          content: Column(
+            mainAxisSize:
+                MainAxisSize.min, // Faz a coluna se ajustar ao conteúdo
+            children: [
+              // Ícone de troféu aparece apenas se for um novo recorde
+              if (recorde)
+                const Icon(Icons.emoji_events, color: Colors.amber, size: 60),
+              if (recorde) const SizedBox(height: 16),
+
+              // Conteúdo de texto dinâmico
+              Text(
+                recorde
+                    ? 'Você superou seu melhor tempo!'
+                    : 'Você encontrou todos os pares!',
+                style: GoogleFonts.nunito(color: Colors.white70),
+                textAlign: TextAlign.center,
               ),
-            if (recorde) const SizedBox(height: 16),
-            
-            // Conteúdo de texto dinâmico
-            Text(
-              recorde 
-                  ? 'Você superou seu melhor tempo!'
-                  : 'Você encontrou todos os pares!',
-              style: GoogleFonts.nunito(color: Colors.white70),
-              textAlign: TextAlign.center,
+            ],
+          ),
+
+          actionsAlignment: MainAxisAlignment.center,
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                'Jogar de Novo',
+                style: GoogleFonts.nunito(
+                  color: Colors.tealAccent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _startNewGame();
+              },
             ),
           ],
-        ),
-
-        actionsAlignment: MainAxisAlignment.center,
-        actions: <Widget>[
-          TextButton(
-            child: Text(
-              'Jogar de Novo', 
-              style: GoogleFonts.nunito(color: Colors.tealAccent, fontSize: 16, fontWeight: FontWeight.bold)
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _startNewGame();
-            },
-          ),
-        ],
-      );
-    },
-  );
+        );
+      },
+    );
   }
 
   @override
@@ -223,7 +234,11 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
         children: [
           const Text(
             'Jogo da Memória',
-            style: TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 28,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           IconButton(
             onPressed: _startNewGame,
