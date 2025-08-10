@@ -34,7 +34,7 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 2),
     );
-    _startNewGame();
+    _iniciarRodada();
   }
 
   @override
@@ -44,7 +44,7 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
     super.dispose();
   }
 
-  void _startNewGame() {
+  void _iniciarRodada() {
     _confettiController.stop();
     List<int> numbers =
         List.generate(_gridSize ~/ 2, (i) => i + 1) +
@@ -168,7 +168,7 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
               ),
               onPressed: () {
                 Navigator.of(context).pop();
-                _startNewGame();
+                _iniciarRodada();
               },
             ),
           ],
@@ -241,7 +241,7 @@ class _JogoDaMemoriaScreenState extends State<JogoDaMemoriaScreen> {
             ),
           ),
           IconButton(
-            onPressed: _startNewGame,
+            onPressed: _iniciarRodada,
             icon: const Icon(Icons.refresh, color: Colors.white, size: 28),
           ),
         ],

@@ -2,6 +2,7 @@ import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
 import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'widgets/forma_geometrica_widget.dart';
 
 class Forma {
@@ -100,33 +101,74 @@ class _GuardiaoDasFormasScreenState extends State<GuardiaoDasFormasScreen> with 
     final tempoFinal = _stopwatch.elapsedMilliseconds / 1000;
 
     // Salva o tempo no repositório
-    await EstatisticasRepository.instance.registrarNovoTempoAtividade(
+    final recorde = await EstatisticasRepository.instance.registrarNovoTempoAtividade(
       atividade: Atividade.guardiaoDasFormas, 
       tempo: tempoFinal,
     );
     
-    Future.delayed(const Duration(milliseconds: 400), _showWinDialog);
+    _showWinDialog(recorde);
   }
   
-  void _showWinDialog() {
+   void _showWinDialog(bool recorde) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: const Color(0xFF1F2937),
-        title: const Text('Excelente!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: const Text('Você guardou todas as formas!', style: TextStyle(color: Colors.white70)),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Jogar de Novo', style: TextStyle(color: Colors.tealAccent, fontSize: 16, fontWeight: FontWeight.bold)),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _iniciarRodada();
-            },
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-        ],
-      ),
+          backgroundColor: const Color(0xFF1F2937),
+
+          // Título dinâmico: muda se for um novo recorde
+          title: Text(
+            recorde ? 'NOVO RECORDE!' : 'Mandou Bem!',
+            style: GoogleFonts.nunito(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          content: Column(
+            mainAxisSize:
+                MainAxisSize.min, // Faz a coluna se ajustar ao conteúdo
+            children: [
+              // Ícone de troféu aparece apenas se for um novo recorde
+              if (recorde)
+                const Icon(Icons.emoji_events, color: Colors.amber, size: 60),
+              if (recorde) const SizedBox(height: 16),
+
+              // Conteúdo de texto dinâmico
+              Text(
+                recorde
+                    ? 'Você superou seu melhor tempo!'
+                    : 'Você encontrou todos os pares!',
+                style: GoogleFonts.nunito(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+
+          actionsAlignment: MainAxisAlignment.center,
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                'Jogar de Novo',
+                style: GoogleFonts.nunito(
+                  color: Colors.tealAccent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _iniciarRodada();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
