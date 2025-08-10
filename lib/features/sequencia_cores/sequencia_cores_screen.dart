@@ -1,9 +1,11 @@
 import 'package:atividade_extensionista_uninter/data/models/atividade.dart';
 import 'package:atividade_extensionista_uninter/data/repositories/estatisticas_repository.dart';
-import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
-import 'widgets/circulo_de_cor_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'domain/gerardor_de_sequencia.dart';
+import 'widgets/circulo_de_cor_widget.dart';
 
 // Enum para controlar o estado do feedback visual
 enum EstadoFeedback { nenhum, correto, incorreto }
@@ -82,7 +84,7 @@ class _SequenciaCoresScreenState extends State<SequenciaCoresScreen> {
         if (indiceFaltando != -1) {
           _sequencia[indiceFaltando] = _corCorreta;
         }
-         _confettiController.play();
+        _confettiController.play();
         Future.delayed(const Duration(milliseconds: 400), _venceuJogo);
       } else {
         // ALTERAÇÃO PRINCIPAL: Lógica para ativar a animação de tremor
@@ -107,54 +109,77 @@ class _SequenciaCoresScreenState extends State<SequenciaCoresScreen> {
     _stopwatch.stop();
     final tempoFinal = _stopwatch.elapsedMilliseconds / 1000;
 
-     // Salva o tempo no repositório
-    await EstatisticasRepository.instance.registrarNovoTempoAtividade(
-      atividade: Atividade.sequenciaDasCores, 
-      tempo: tempoFinal,
-    );
+    // Salva o tempo no repositório
+    final recorde = await EstatisticasRepository.instance
+        .registrarNovoTempoAtividade(
+          atividade: Atividade.sequenciaDasCores,
+          tempo: tempoFinal,
+        );
 
-    Future.delayed(const Duration(milliseconds: 400), _showWinDialog);
+    _showWinDialog(recorde);
   }
 
   // Implementação movida para dentro da classe e com o nome correto.
-  void _showWinDialog() {
+  void _showWinDialog(bool recorde) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (BuildContext context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: const Color(0xFF1F2937),
+
+          // Título dinâmico: muda se for um novo recorde
+          title: Text(
+            recorde ? 'NOVO RECORDE!' : 'Mandou Bem!',
+            style: GoogleFonts.nunito(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
-            backgroundColor: const Color(0xFF1F2937),
-            title: const Text(
-              'Isso mesmo!',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: const Text(
-              'Você completou a sequência!',
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text(
-                  'Próxima',
-                  style: TextStyle(
-                    color: Colors.tealAccent,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _iniciarRodada();
-                },
+            textAlign: TextAlign.center,
+          ),
+
+          content: Column(
+            mainAxisSize:
+                MainAxisSize.min, // Faz a coluna se ajustar ao conteúdo
+            children: [
+              // Ícone de troféu aparece apenas se for um novo recorde
+              if (recorde)
+                const Icon(Icons.emoji_events, color: Colors.amber, size: 60),
+              if (recorde) const SizedBox(height: 16),
+
+              // Conteúdo de texto dinâmico
+              Text(
+                recorde
+                    ? 'Você superou seu melhor tempo!'
+                    : 'Você encontrou todos os pares!',
+                style: GoogleFonts.nunito(color: Colors.white70),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
+
+          actionsAlignment: MainAxisAlignment.center,
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                'Jogar de Novo',
+                style: GoogleFonts.nunito(
+                  color: Colors.tealAccent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _iniciarRodada();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
